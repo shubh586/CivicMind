@@ -5,13 +5,15 @@ import { useRouter } from 'next/navigation';
 import { complaintsAPI } from '@/lib/api';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Textarea, Label } from '@/components/ui/input';
+import { Textarea, Label, Input } from '@/components/ui/input';
 import { StatusBadge, UrgencyBadge } from '@/components/ui/badge';
 import { Loader2, CheckCircle, AlertCircle, Send } from 'lucide-react';
 
 export default function NewComplaintPage() {
     const router = useRouter();
     const [text, setText] = useState('');
+    const [location, setLocation] = useState('');
+    const [image, setImage] = useState(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [result, setResult] = useState(null);
@@ -28,7 +30,12 @@ export default function NewComplaintPage() {
         setLoading(true);
 
         try {
-            const response = await complaintsAPI.create({ text: text.trim() });
+            const formData = new FormData();
+            formData.append('text', text.trim());
+            if (location) formData.append('location', location.trim());
+            if (image) formData.append('image', image);
+
+            const response = await complaintsAPI.create(formData);
             setResult(response.data.data);
         } catch (err) {
             setError(err.response?.data?.error || 'Failed to submit complaint');
@@ -104,6 +111,8 @@ export default function NewComplaintPage() {
                                 onClick={() => {
                                     setResult(null);
                                     setText('');
+                                    setLocation('');
+                                    setImage(null);
                                 }}
                             >
                                 Submit Another
@@ -160,6 +169,33 @@ export default function NewComplaintPage() {
                             <p className="text-xs text-gray-500 mt-1">
                                 Minimum 10 characters • {text.length} characters
                             </p>
+                        </div>
+
+                        <div>
+                            <Label htmlFor="location">Location (Optional)</Label>
+                            <Input
+                                id="location"
+                                placeholder="e.g. Civil Lines, Sadar"
+                                value={location}
+                                onChange={(e) => setLocation(e.target.value)}
+                                className="bg-gray-900 border-gray-700 text-white"
+                            />
+                        </div>
+
+                        <div>
+                            <Label htmlFor="image">Attach Image (Optional)</Label>
+                            <Input
+                                id="image"
+                                type="file"
+                                accept="image/*"
+                                onChange={(e) => setImage(e.target.files[0])}
+                                className="bg-gray-900 border-gray-700 text-white cursor-pointer"
+                            />
+                            {image && (
+                                <p className="text-xs text-green-400 mt-1">
+                                    Selected: {image.name}
+                                </p>
+                            )}
                         </div>
 
                         <Button

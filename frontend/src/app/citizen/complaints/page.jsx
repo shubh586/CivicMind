@@ -4,9 +4,10 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { complaintsAPI } from '@/lib/api';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { ComplaintCard } from '@/components/ComplaintCard';
 import { Button } from '@/components/ui/button';
 import { Select } from '@/components/ui/input';
-import { StatusBadge, UrgencyBadge } from '@/components/ui/badge';
+
 import { formatDate } from '@/lib/utils';
 import { Loader2, FileText, PlusCircle, ChevronRight } from 'lucide-react';
 
@@ -97,32 +98,9 @@ export default function ComplaintsListPage() {
                             key={complaint.id}
                             href={`/citizen/complaints/${complaint.id}`}
                         >
-                            <Card className="hover:border-gray-700 transition-colors cursor-pointer">
-                                <CardContent className="py-4">
-                                    <div className="flex items-start justify-between gap-4">
-                                        <div className="flex-1 min-w-0">
-                                            <div className="flex items-center gap-2 mb-2">
-                                                <StatusBadge status={complaint.status} />
-                                                <UrgencyBadge urgency={complaint.urgency} />
-                                                <span className="text-xs text-gray-500">
-                                                    #{complaint.id}
-                                                </span>
-                                            </div>
-                                            <p className="text-white font-medium line-clamp-2">
-                                                {complaint.text}
-                                            </p>
-                                            <div className="flex items-center gap-4 mt-2 text-sm text-gray-400">
-                                                <span className="capitalize">{complaint.category}</span>
-                                                <span>•</span>
-                                                <span>{complaint.department_name}</span>
-                                                <span>•</span>
-                                                <span>{formatDate(complaint.created_at)}</span>
-                                            </div>
-                                        </div>
-                                        <ChevronRight className="w-5 h-5 text-gray-500 flex-shrink-0" />
-                                    </div>
-                                </CardContent>
-                            </Card>
+                            <ComplaintCard complaint={complaint}>
+                                <ChevronRight className="w-5 h-5 text-gray-500" />
+                            </ComplaintCard>
                         </Link>
                     ))}
                 </div>

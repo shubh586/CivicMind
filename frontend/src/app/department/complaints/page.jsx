@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { complaintsAPI } from '@/lib/api';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { ComplaintCard } from '@/components/ComplaintCard';
 import { Button } from '@/components/ui/button';
 import { Select } from '@/components/ui/input';
 import { StatusBadge, UrgencyBadge } from '@/components/ui/badge';
@@ -79,43 +80,25 @@ export default function DepartmentComplaintsPage() {
             ) : (
                 <div className="space-y-3">
                     {complaints.map((complaint) => (
-                        <Card key={complaint.id}>
-                            <CardContent className="py-4">
-                                <div className="flex items-start justify-between gap-4">
-                                    <div className="flex-1 min-w-0">
-                                        <div className="flex items-center gap-2 mb-2">
-                                            <span className="text-xs text-gray-500">#{complaint.id}</span>
-                                            <StatusBadge status={complaint.status} />
-                                            <UrgencyBadge urgency={complaint.urgency} />
-                                        </div>
-                                        <p className="text-white line-clamp-2">{complaint.text}</p>
-                                        <div className="flex items-center gap-4 mt-2 text-sm text-gray-400">
-                                            <span className="capitalize">{complaint.category}</span>
-                                            <span>•</span>
-                                            <span>{formatDate(complaint.created_at)}</span>
-                                        </div>
-                                    </div>
-
-                                    <div className="flex items-center gap-2">
-                                        <Select
-                                            value={complaint.status}
-                                            onChange={(e) => handleStatusChange(complaint.id, e.target.value)}
-                                            className="w-36"
-                                            disabled={updating === complaint.id}
-                                        >
-                                            {statusOptions.map((opt) => (
-                                                <option key={opt.value} value={opt.value}>
-                                                    {opt.label}
-                                                </option>
-                                            ))}
-                                        </Select>
-                                        {updating === complaint.id && (
-                                            <Loader2 className="w-4 h-4 animate-spin text-purple-500" />
-                                        )}
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
+                        <ComplaintCard key={complaint.id} complaint={complaint}>
+                            <div className="flex items-center gap-2">
+                                <Select
+                                    value={complaint.status}
+                                    onChange={(e) => handleStatusChange(complaint.id, e.target.value)}
+                                    className="w-36"
+                                    disabled={updating === complaint.id}
+                                >
+                                    {statusOptions.map((opt) => (
+                                        <option key={opt.value} value={opt.value}>
+                                            {opt.label}
+                                        </option>
+                                    ))}
+                                </Select>
+                                {updating === complaint.id && (
+                                    <Loader2 className="w-4 h-4 animate-spin text-purple-500" />
+                                )}
+                            </div>
+                        </ComplaintCard>
                     ))}
                 </div>
             )}

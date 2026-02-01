@@ -1,8 +1,17 @@
 import dotenv from 'dotenv';
 import express from 'express';
 import cors from 'cors';
+import fs from 'fs';
+import path from 'path';
 
 dotenv.config();
+
+// Ensure uploads directory exists
+const uploadsDir = path.join(process.cwd(), 'uploads');
+if (!fs.existsSync(uploadsDir)) {
+    fs.mkdirSync(uploadsDir);
+    console.log('Created uploads directory');
+}
 
 // Middleware
 import { errorHandler, notFound } from './middleware/error.middleware.js';
@@ -31,6 +40,7 @@ app.use(cors({
 }));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use('/uploads', express.static('uploads'));
 
 // Request logging in development
 if (process.env.NODE_ENV !== 'production') {

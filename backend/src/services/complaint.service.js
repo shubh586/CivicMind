@@ -11,7 +11,7 @@ import slaService from './sla.service.js';
 class ComplaintService {
 
     async processComplaint(data) {
-        const { text, userId } = data;
+        const { text, userId, location, imageUrl } = data;
         const client = await getClient();
 
         try {
@@ -21,6 +21,9 @@ class ComplaintService {
             console.log('🔍 Classifying complaint...');
             const classification = await classificationService.classifyComplaint(text);
             console.log('Classification:', classification);
+
+            // Use provided location if available, otherwise use LLM inferred location
+            const finalLocation = location || classification.location;
 
             // 2. Route to appropriate department
             console.log('🛣️ Routing complaint...');
@@ -39,7 +42,7 @@ class ComplaintService {
                 complaintText: text,
                 category: classification.category,
                 urgency: classification.urgency,
-                location: classification.location,
+                location: finalLocation,
                 department: routing.departmentName,
                 confidence: classification.confidence,
                 routingRule: routing.ruleDescription
@@ -50,23 +53,24 @@ class ComplaintService {
         INSERT INTO complaints (
           user_id, text, category, urgency, location, intent,
           department_id, status, explanation, confidence_score,
-          assigned_by, sla_deadline
+          assigned_by, sla_deadline, image_url
         )
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
         RETURNING *
       `, [
                 userId || null,
                 text,
                 classification.category,
                 classification.urgency,
-                classification.location,
+                finalLocation,
                 classification.intent,
                 routing.departmentId,
                 classification.needsReview ? 'pending' : 'assigned',
                 explanation,
                 classification.confidence,
                 'llm',
-                slaDeadline
+                slaDeadline,
+                imageUrl || null
             ]);
 
             const complaint = complaintResult.rows[0];
@@ -294,7 +298,7 @@ class ComplaintService {
         }
     }
 
-  
+
     async getDashboardStats(departmentId = null) {
         let queryText = `
       SELECT 

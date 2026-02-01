@@ -45,7 +45,9 @@ export const authAPI = {
 
 // Complaints API
 export const complaintsAPI = {
-    create: (data) => api.post('/complaints', data),
+    create: (data) => {
+        return api.post('/complaints', data);
+    },
     list: (params) => api.get('/complaints', { params }),
     get: (id) => api.get(`/complaints/${id}`),
     updateStatus: (id, status) => api.patch(`/complaints/${id}/status`, { status }),

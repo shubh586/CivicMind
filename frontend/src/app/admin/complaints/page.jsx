@@ -5,6 +5,7 @@ import { complaintsAPI } from '@/lib/api';
 import { Card, CardContent } from '@/components/ui/card';
 import { Select } from '@/components/ui/input';
 import { StatusBadge, UrgencyBadge } from '@/components/ui/badge';
+import { ComplaintCard } from '@/components/ComplaintCard';
 import { formatDate } from '@/lib/utils';
 import { Loader2, FileText } from 'lucide-react';
 
@@ -70,38 +71,11 @@ export default function AdminComplaintsPage() {
                     </CardContent>
                 </Card>
             ) : (
-                <Card>
-                    <CardContent className="p-0">
-                        <table className="w-full">
-                            <thead>
-                                <tr className="border-b border-gray-800">
-                                    <th className="text-left p-4 text-gray-400 font-medium">ID</th>
-                                    <th className="text-left p-4 text-gray-400 font-medium">Complaint</th>
-                                    <th className="text-left p-4 text-gray-400 font-medium">Category</th>
-                                    <th className="text-left p-4 text-gray-400 font-medium">Status</th>
-                                    <th className="text-left p-4 text-gray-400 font-medium">Department</th>
-                                    <th className="text-left p-4 text-gray-400 font-medium">Date</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {complaints.map((c) => (
-                                    <tr key={c.id} className="border-b border-gray-800/50 hover:bg-gray-800/30">
-                                        <td className="p-4 text-gray-500">#{c.id}</td>
-                                        <td className="p-4 text-white max-w-xs truncate">{c.text}</td>
-                                        <td className="p-4 capitalize">
-                                            <span className="text-blue-400">{c.category}</span>
-                                        </td>
-                                        <td className="p-4">
-                                            <StatusBadge status={c.status} />
-                                        </td>
-                                        <td className="p-4 text-gray-300">{c.department_name}</td>
-                                        <td className="p-4 text-gray-400">{formatDate(c.created_at)}</td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </CardContent>
-                </Card>
+                <div className="space-y-4">
+                    {complaints.map((c) => (
+                        <ComplaintCard key={c.id} complaint={c} />
+                    ))}
+                </div>
             )}
         </div>
     );

@@ -10,21 +10,33 @@ import { authenticate, authorize, optionalAuth } from '../middleware/auth.middle
 const router = express.Router();
 
 
-const upload = multer({
-    storage: multer.memoryStorage(),
-    limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
+// Configure storage
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, 'uploads/')
+    },
+    filename: function (req, file, cb) {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
+        const ext = file.originalname.split('.').pop();
+        cb(null, file.fieldname + '-' + uniqueSuffix + '.' + ext)
+    }
+});
+
+const uploadImage = multer({
+    storage: storage,
+    limits: { fileSize: 5 * 1024 * 1024 },
     fileFilter: (req, file, cb) => {
-        if (file.mimetype === 'text/csv' || file.originalname.endsWith('.csv')) {
+        if (file.mimetype.startsWith('image/')) {
             cb(null, true);
         } else {
-            cb(new Error('Only CSV files are allowed'));
+            cb(new Error('Only image files are allowed'));
         }
     }
 });
 
-
-router.post('/', optionalAuth, asyncHandler(async (req, res) => {
-    const { text } = req.body;
+router.post('/', optionalAuth, uploadImage.single('image'), asyncHandler(async (req, res) => {
+    const { text, location } = req.body;
+    const imagePath = req.file ? `/uploads/${req.file.filename}` : null;
 
     if (!text || text.trim().length < 10) {
         return res.status(400).json({
@@ -35,7 +47,9 @@ router.post('/', optionalAuth, asyncHandler(async (req, res) => {
 
     const result = await complaintService.processComplaint({
         text: text.trim(),
-        userId: req.user?.id || null
+        userId: req.user?.id || null,
+        location,
+        imageUrl: imagePath
     });
 
     res.status(201).json({
@@ -57,10 +71,23 @@ router.post('/', optionalAuth, asyncHandler(async (req, res) => {
 }));
 
 
+const uploadCsv = multer({
+    storage: multer.memoryStorage(),
+    limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
+    fileFilter: (req, file, cb) => {
+        if (file.mimetype === 'text/csv' || file.originalname.endsWith('.csv')) {
+            cb(null, true);
+        } else {
+            cb(new Error('Only CSV files are allowed'));
+        }
+    }
+});
+
+
 router.post('/batch',
     authenticate,
     authorize('admin', 'reviewer'),
-    upload.single('file'),
+    uploadCsv.single('file'),
     asyncHandler(async (req, res) => {
         if (!req.file) {
             return res.status(400).json({
